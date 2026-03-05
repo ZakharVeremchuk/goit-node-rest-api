@@ -22,4 +22,6 @@ contactsRouter.put("/:id", updateContact);
 
 contactsRouter.patch("/:id/favorite", updateFavorite)
 
+contactsRouter.post("/auth/register")
+
 export default contactsRouter;

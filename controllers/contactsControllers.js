@@ -1,5 +1,6 @@
 import HttpError from "../helpers/HttpError.js";
 import contactsService from "../services/contactsServices.js";
+import userService from "../services/userService.js";
 import {
   createContactSchema,
   updateContactSchema,
@@ -20,7 +21,7 @@ export const getOneContact = async (req, res, next) => {
       res.json(contact);
     }
   } catch (error) {
-     next(error);
+    next(error);
   }
 };
 
@@ -34,7 +35,7 @@ export const deleteContact = async (req, res, next) => {
       res.json(contact);
     }
   } catch (error) {
-     next(error);
+    next(error);
   }
 };
 
@@ -48,7 +49,7 @@ export const createContact = async (req, res, next) => {
     const contact = await contactsService.addContact(name, email, phone);
     res.status(201).json(contact);
   } catch (error) {
-     next(error);
+    next(error);
   }
 };
 
@@ -69,7 +70,7 @@ export const updateContact = async (req, res, next) => {
       res.status(200).json(updatedContact);
     }
   } catch (error) {
-     next(error);
+    next(error);
   }
 };
 
@@ -83,12 +84,38 @@ export const updateFavorite = async (req, res, next) => {
     }
 
     const contact = await contactsService.updateStatusContact(id, { favorite });
-    if(!contact) {
+    if (!contact) {
       throw HttpError(404, "Not Found");
     }
 
     res.json(contact);
   } catch (error) {
-     next(error);
+    next(error);
+  }
+};
+
+export const register = async (req, res, next) => {
+  const { email, password } = res.body;
+  const user = await userService.checkIfExist(email);
+  if (user) {
+    return res.status(409).json({
+      status: "error",
+      code: 409,
+      message: "Email already in use",
+      data: "Conflict",
+    });
+  }
+
+  try {
+    await userService.save(email, password);
+    res.status(201).json({
+      status: 'success',
+      code: 201,
+      data: {
+        message: 'Registration successful'
+      }
+    })
+  } catch (error) {
+    next(error);
   }
 };
