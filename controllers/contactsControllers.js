@@ -1,20 +1,21 @@
 import HttpError from "../helpers/HttpError.js";
 import contactsService from "../services/contactsServices.js";
-import userService from "../services/userService.js";
 import {
   createContactSchema,
   updateContactSchema,
 } from "../schemas/contactsSchemas.js";
 
 export const getAllContacts = async (req, res) => {
-  const contacts = await contactsService.listContacts();
+  const ownerId = req.user.id;
+  const contacts = await contactsService.listContacts(ownerId);
   res.json(contacts);
 };
 
 export const getOneContact = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const contact = await contactsService.getContactById(id);
+    const ownerId = req.user.id;
+    const contact = await contactsService.getContactById(id, ownerId);
     if (contact === null) {
       throw HttpError(404, "Not found");
     } else {
@@ -28,7 +29,8 @@ export const getOneContact = async (req, res, next) => {
 export const deleteContact = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const contact = await contactsService.removeContact(id);
+    const ownerId = req.user.id;
+    const contact = await contactsService.removeContact(id, ownerId);
     if (contact == null) {
       throw HttpError(404, "Not found");
     } else {
@@ -46,7 +48,8 @@ export const createContact = async (req, res, next) => {
       throw HttpError(400, error.message);
     }
     const { name, email, phone } = req.body;
-    const contact = await contactsService.addContact(name, email, phone);
+    const ownerId = req.user.id;
+    const contact = await contactsService.addContact(name, email, phone, ownerId);
     res.status(201).json(contact);
   } catch (error) {
     next(error);
@@ -63,7 +66,8 @@ export const updateContact = async (req, res, next) => {
       throw HttpError(400, error.message);
     }
     const { id } = req.params;
-    const updatedContact = await contactsService.updateContact(id, req.body);
+    const ownerId = req.user.id;
+    const updatedContact = await contactsService.updateContact(id, req.body, ownerId);
     if (updatedContact == null) {
       throw HttpError(404, "Not Found");
     } else {
@@ -78,12 +82,13 @@ export const updateFavorite = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { favorite } = req.body;
+    const ownerId = req.user.id;
 
     if (favorite === undefined) {
       throw HttpError(400, "Missing field favorite");
     }
 
-    const contact = await contactsService.updateStatusContact(id, { favorite });
+    const contact = await contactsService.updateStatusContact(id, { favorite }, ownerId);
     if (!contact) {
       throw HttpError(404, "Not Found");
     }
@@ -94,28 +99,3 @@ export const updateFavorite = async (req, res, next) => {
   }
 };
 
-export const register = async (req, res, next) => {
-  const { email, password } = res.body;
-  const user = await userService.checkIfExist(email);
-  if (user) {
-    return res.status(409).json({
-      status: "error",
-      code: 409,
-      message: "Email already in use",
-      data: "Conflict",
-    });
-  }
-
-  try {
-    await userService.save(email, password);
-    res.status(201).json({
-      status: 'success',
-      code: 201,
-      data: {
-        message: 'Registration successful'
-      }
-    })
-  } catch (error) {
-    next(error);
-  }
-};

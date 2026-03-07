@@ -1,62 +1,58 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import Contact from "../models/contact.js";
 
-const __dirname = fileURLToPath(new URL(".", import.meta.url));
-const contactsPath = path.join(__dirname, "..", "db", "contacts.json");
-
-async function listContacts() {
-  const contacts = await Contact.findAll();
+async function listContacts(ownerId) {
+  const contacts = await Contact.findAll({ where: { owner: ownerId } });
   return contacts;
 }
 
-async function getContactById(id) {
-  const contacts = await Contact.findByPk(id);
-  return contacts;
-}
-
-async function removeContact(contactId) {
-  const deleted = await Contact.destroy({
-    where: { id: contactId },
+async function getContactById(contactId, ownerId) {
+  const contact = await Contact.findOne({
+    where: { id: contactId, owner: ownerId },
   });
+  return contact;
+}
 
+async function removeContact(contactId, ownerId) {
+  const deleted = await Contact.destroy({
+    where: { id: contactId, owner: ownerId },
+  });
   return deleted;
 }
 
-async function addContact(name, email, phone) {
+async function addContact(name, email, phone, ownerId) {
   const newContact = await Contact.create({
     name,
     email,
     phone,
+    owner: ownerId,
   });
   return newContact;
 }
 
-async function updateContact(id, body) {
+async function updateContact(id, body, ownerId) {
   const [updated] = await Contact.update(body, {
-    where: { id },
+    where: { id, owner: ownerId },
   });
 
-  if (updated == 0) {
+  if (updated === 0) {
     return null;
   }
-  return await Contact.findByPk(id);
+  return await Contact.findOne({ where: { id, owner: ownerId } });
 }
 
-async function updateStatusContact(id, body) {
+async function updateStatusContact(id, body, ownerId) {
   const { favorite } = body;
   const [updated] = await Contact.update(
     { favorite },
     {
-      where: { id },
-    },
+      where: { id, owner: ownerId },
+    }
   );
 
-  if (updated == 0) {
+  if (updated === 0) {
     return null;
   }
-  return await Contact.findByPk(id);
+  return await Contact.findOne({ where: { id, owner: ownerId } });
 }
 
 export default {
@@ -65,5 +61,5 @@ export default {
   removeContact,
   addContact,
   updateContact,
-  updateStatusContact
+  updateStatusContact,
 };

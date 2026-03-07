@@ -1,27 +1,31 @@
-import sequelize from "../db/db";
-import {DataTypes} from sequelize;
+import sequelize from "../db/db.js";
+import { DataTypes } from "sequelize";
 
 const User = sequelize.define(
-    "user",
-    {
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  email: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
-  },
-  subscription: {
+  "user",
+  {
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    subscription: {
       type: DataTypes.ENUM,
       values: ["starter", "pro", "business"],
-      defaultValue: "starter"
+      defaultValue: "starter",
+    },
+    token: {
+      type: DataTypes.STRING,
+      defaultValue: null,
+    },
   },
-  token: {
-    type: DataTypes.STRING,
-    defaultValue: null,
-  },
-}
-)
+  {
+    timestamps: false,
+  }
+);
+
 export default User;
