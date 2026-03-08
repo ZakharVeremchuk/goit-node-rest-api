@@ -92,3 +92,8 @@ export const current = async (req, res, next) => {
   }
 };
 
+export const avatars = async(req, res, next) => {
+  await userService.changeAvatarURL(req.file, req.user.id);
+  res.status(200).send();
+}
+
