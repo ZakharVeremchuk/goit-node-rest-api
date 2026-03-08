@@ -5,21 +5,22 @@ import {
   deleteContact,
   createContact,
   updateContact,
-  updateFavorite
+  updateFavorite,
 } from "../controllers/contactsControllers.js";
+import { auth } from "../middleware/auth.js";
 
 const contactsRouter = express.Router();
 
-contactsRouter.get("/", getAllContacts);
+contactsRouter.get("/", auth, getAllContacts);
 
-contactsRouter.get("/:id", getOneContact);
+contactsRouter.get("/:id", auth, getOneContact);
 
-contactsRouter.delete("/:id", deleteContact);
+contactsRouter.delete("/:id", auth, deleteContact);
 
-contactsRouter.post("/", createContact);
+contactsRouter.post("/", auth, createContact);
 
-contactsRouter.put("/:id", updateContact);
+contactsRouter.put("/:id", auth, updateContact);
 
-contactsRouter.patch("/:id/favorite", updateFavorite)
+contactsRouter.patch("/:id/favorite", auth, updateFavorite);
 
 export default contactsRouter;
