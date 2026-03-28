@@ -22,6 +22,14 @@ const User = sequelize.define(
       type: DataTypes.STRING,
       defaultValue: null,
     },
+    verify: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    verificationCode: {
+      type: DataTypes.STRING,
+      allowNull: true 
+    }
   },
   {
     timestamps: false,

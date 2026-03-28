@@ -1,13 +1,11 @@
 import { Sequelize } from "sequelize";
+import 'dotenv/config';
 
-const sequelize = new Sequelize("postgresql://db_contacts_77w8_user:ZqaltwG6TMYibjapMS7uNrHNkexlaopB@dpg-d6e54f75r7bs73bekk20-a.frankfurt-postgres.render.com/db_contacts_77w8", {
+const { DB_URL } = process.env;
+
+const sequelize = new Sequelize(DB_URL, {
     dialect: 'postgres',
-    dialectOptions: {
-        ssl: {
-            require: true,
-            rejectUnauthorized: false
-        }
-    }
+    ssl: false
 })
 
 export async function connectToPostgres() {

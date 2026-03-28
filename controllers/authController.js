@@ -32,6 +32,23 @@ export const register = async (req, res, next) => {
   }
 };
 
+export const verify = async(req, res,next) => {
+  try {
+    const { verificationCode } = req.params;
+    const user = await userService.findByVerificationCode(verificationCode);
+    if(!user) throw HttpError(404, "User not found")
+      
+    await userService.updateVerificationToken(user);
+
+    res.json({
+      message: "Email verify successfully"
+    })
+  } catch (error) {
+    next(error);
+  }
+
+}
+
 export const login = async (req, res, next) => {
   try {
     const { error } = loginSchema.validate(req.body);
@@ -42,9 +59,8 @@ export const login = async (req, res, next) => {
     const { email, password } = req.body;
     const user = await userService.findByEmail(email);
 
-    if (!user) {
-      throw HttpError(401, "Email or password is wrong");
-    }
+    if (!user) throw HttpError(401, "Email or password is wrong");
+    if(!user.verify) throw HttpError(401, "Email not verified");
 
     const isValidPassword = await userService.comparePassword(
       password,
