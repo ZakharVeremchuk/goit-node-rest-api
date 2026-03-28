@@ -59,7 +59,7 @@ export const resendVerify = async(req, res, next) => {
 
     const user = await userService.findByEmail(email);
     if(!user) throw HttpError(404, "User not found");
-    if(user.verify) throw HttpError(400, "User already verified")
+    if(user.verify) throw HttpError(400, "Verification has already been passed")
 
     await userService.sendVerifyEmail(user.email, user.verificationToken);
 
