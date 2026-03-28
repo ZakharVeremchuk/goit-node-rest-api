@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import userService from "../services/userService.js";
 import HttpError from "../helpers/HttpError.js";
-import { registerSchema, loginSchema } from "../schemas/authSchemas.js";
+import { registerSchema, loginSchema, emailSchema } from "../schemas/authSchemas.js";
 
 const secret = "your-secret-key";
 
@@ -32,21 +32,44 @@ export const register = async (req, res, next) => {
   }
 };
 
-export const verify = async(req, res,next) => {
+export const verify = async(req, res, next) => {
   try {
-    const { verificationCode } = req.params;
-    const user = await userService.findByVerificationCode(verificationCode);
+    const { verificationToken } = req.params;
+    const user = await userService.findByVerificationToken(verificationToken);
     if(!user) throw HttpError(404, "User not found")
       
     await userService.updateVerificationToken(user);
 
     res.json({
-      message: "Email verify successfully"
+      message: "Verification successful"
     })
   } catch (error) {
     next(error);
   }
 
+}
+
+export const resendVerify = async(req, res, next) => {
+  try {
+    const { error } = emailSchema.validate(req.body);
+    if (error) {
+      throw HttpError(400, error.message);
+    }
+    const {email} = req.body;
+
+    const user = await userService.findByEmail(email);
+    if(!user) throw HttpError(404, "User not found");
+    if(user.verify) throw HttpError(400, "User already verified")
+
+    await userService.sendVerifyEmail(user.email, user.verificationToken);
+
+    res.json({
+      message: "Resend email successfully"
+    })
+
+  } catch (error) {
+    next(error);
+  }
 }
 
 export const login = async (req, res, next) => {

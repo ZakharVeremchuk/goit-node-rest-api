@@ -6,16 +6,25 @@ import sendEmail from "../helpers/sendEmail.js";
 
 const { BASE_URL } = process.env;
 
+async function sendVerifyEmail(email, verificationToken) {
+  const verifyEmail = {
+    to: email,
+    subject: "Verify email",
+    html: `<a href="${BASE_URL}/api/auth/verify/${verificationToken}" target="_blank">Click verify email</a>`,
+  };
+  await sendEmail(verifyEmail);
+}
+
 async function findByEmail(email) {
   return await User.findOne({ where: { email } });
 }
 
-async function findByVerificationCode(verificationCode) {
-  return await User.findOne({ where: { verificationCode } });
+async function findByVerificationToken(verificationToken) {
+  return await User.findOne({ where: { verificationToken } });
 }
 
 async function updateVerificationToken(user) {
-  return await user.update({verify: true, verificationCode: ''})
+  return await user.update({verify: true, verificationToken: null})
 }
 
 async function findById(id) {
@@ -24,19 +33,14 @@ async function findById(id) {
 
 async function createUser(email, password) {
   const hashedPassword = await bcrypt.hash(password, 10);
-  const verificationCode = nanoid();
+  const verificationToken = nanoid();
   const newUser = await User.create({
     email,
     password: hashedPassword,
-    verificationCode: verificationCode
+    verificationToken: verificationToken
   });
 
-  const verifyEmail = {
-    to: newUser.email,
-    subject: "Verify email",
-    html: `<a href="${BASE_URL}/api/auth/verify/${verificationCode}" target="_blank" >Click verify email</a>`,
-  };
-  await sendEmail(verifyEmail);
+  await sendVerifyEmail(newUser.email, verificationToken);
 
   return newUser;
 }
@@ -55,6 +59,7 @@ export default {
   createUser,
   updateToken,
   comparePassword,
-  findByVerificationCode,
-  updateVerificationToken
+  findByVerificationToken,
+  updateVerificationToken,
+  sendVerifyEmail
 };
